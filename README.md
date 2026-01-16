@@ -6,6 +6,10 @@ Welcome to **Tennis Court 228**, an interactive web-based implementation of the 
 
 This is not just a tennis training tool; it is a **chessboard of tennis possibilities**. The Paul Cohen Model represents decades of research, mathematical analysis, and practical application by one of the most respected technical and tactical minds in the game.
 
+## 📖 [View Complete Paul Cohen Model Slides (PDF)](TennisCourt228.pdf)
+
+Explore the comprehensive breakdown of the 228-zone system, tactical principles, and mathematical foundations in our detailed presentation.
+
 ![Tennis Court 228 Visualization](TennisCourt228.png)
 
 ---
