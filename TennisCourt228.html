@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paul Cohen Model: 228 Zones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .court-container {
+            aspect-ratio: 1 / 1.5;
+            position: relative;
+            background-color: #15803d;
+            border: 6px solid rgba(255, 255, 255, 0.4);
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        }
+        .court-line {
+            position: absolute;
+            background-color: white;
+            pointer-events: none;
+        }
+        .grid-line {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+        }
+        .zone {
+            width: 100%;
+            height: 100%;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .zone-player {
+            cursor: crosshair;
+        }
+        .zone-opponent {
+            pointer-events: none;
+        }
+        .highlight-hover {
+            background-color: rgba(250, 204, 21, 0.5);
+            border: 1px solid rgba(254, 240, 138, 1);
+            z-index: 40;
+        }
+        .highlight-target {
+            background-color: rgba(234, 88, 12, 0.9);
+            border: 1px solid rgba(254, 215, 170, 1);
+            z-index: 30;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(234, 88, 12, 0.9);
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+        .zap-icon {
+            color: white;
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="max-w-4xl w-full bg-slate-800 rounded-xl shadow-2xl p-6 border border-slate-700">
+        <!-- Header -->
+        <div class="mb-6 text-center">
+            <h1 class="text-3xl font-bold text-yellow-400 uppercase tracking-tight">Paul Cohen Model: 228 Zones</h1>
+            <p class="text-slate-400 mt-2 italic text-sm">Interactive Strategic Mapping — Standalone Version</p>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700 text-center">
+                <span class="block font-semibold uppercase text-[9px] tracking-widest text-slate-400 mb-1">Your Position</span>
+                <p id="pos-display" class="text-lg font-mono">-- / --</p>
+            </div>
+            <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700 text-center">
+                <span class="block font-semibold uppercase text-[9px] tracking-widest text-slate-400 mb-1">Lane Detail</span>
+                <p id="lane-display" class="text-xs truncate">Select Zone</p>
+            </div>
+            <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700 text-center">
+                <span class="block font-semibold uppercase text-[9px] tracking-widest text-slate-400 mb-1">Context</span>
+                <p id="context-display" class="text-xs">N/A</p>
+            </div>
+            <div class="bg-orange-500/20 p-3 rounded-lg border border-orange-500/50 shadow-inner text-center">
+                <span class="block font-semibold uppercase text-[9px] tracking-widest text-orange-200 mb-1">Optimal Target</span>
+                <p id="target-display" class="text-lg font-mono text-orange-400">-- / --</p>
+            </div>
+        </div>
+
+        <!-- Court -->
+        <div id="court" class="court-container">
+            <!-- Official Lines -->
+            <!-- Doubles Sidelines -->
+            <div class="court-line inset-y-0 left-0 w-[4px]"></div>
+            <div class="court-line inset-y-0 right-0 w-[4px]"></div>
+            <!-- Baselines -->
+            <div class="court-line top-0 w-full h-[6px]"></div>
+            <div class="court-line bottom-0 w-full h-[6px]"></div>
+            <!-- Singles Sidelines -->
+            <div class="court-line inset-y-0 left-[12.5%] w-[4px]"></div>
+            <div class="court-line inset-y-0 right-[12.5%] w-[4px]"></div>
+            <!-- Service Lines -->
+            <div class="court-line top-[27%] left-[12.5%] right-[12.5%] h-[4px]"></div>
+            <div class="court-line bottom-[27%] left-[12.5%] right-[12.5%] h-[4px]"></div>
+            <!-- Center Service Line -->
+            <div class="court-line top-[27%] bottom-[27%] left-1/2 -translate-x-1/2 w-[4px]"></div>
+            <!-- Net -->
+            <div class="absolute top-1/2 left-0 w-full h-[4px] bg-white/80 z-30 shadow-md"></div>
+            <!-- Center Marks -->
+            <div class="court-line top-0 left-1/2 -translate-x-1/2 w-[4px] h-4"></div>
+            <div class="court-line bottom-0 left-1/2 -translate-x-1/2 w-[4px] h-4"></div>
+
+            <!-- Interaction Grid -->
+            <div id="grid-layer" class="absolute inset-0 grid z-20" style="grid-template-columns: repeat(19, 1fr); grid-template-rows: repeat(12, 1fr);">
+                <!-- Cells generated via JS -->
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-6 text-[10px] text-slate-500 flex flex-wrap gap-x-6 gap-y-2 justify-between items-center border-t border-slate-700 pt-4">
+            <div class="flex gap-4">
+                <span class="flex items-center gap-1.5 uppercase tracking-tighter">
+                    <div class="w-2.5 h-2.5 bg-yellow-400/50 rounded-sm"></div> Player Position
+                </span>
+                <span class="flex items-center gap-1.5 uppercase tracking-tighter">
+                    <div class="w-2.5 h-2.5 bg-orange-600 rounded-sm"></div> Target Coordinate
+                </span>
+            </div>
+            <p class="uppercase tracking-widest opacity-60">Connected Tennis Logic v1.0</p>
+        </div>
+    </div>
+
+    <script>
+        const LANES = 19;
+        const DEPTHS = 12;
+        const gridLayer = document.getElementById('grid-layer');
+        const posDisplay = document.getElementById('pos-display');
+        const laneDisplay = document.getElementById('lane-display');
+        const contextDisplay = document.getElementById('context-display');
+        const targetDisplay = document.getElementById('target-display');
+
+        const zones = [];
+
+        function getLaneLabel(lane) {
+            if (lane === 10) return "Center (T)";
+            return lane < 10 ? `Left Lane ${lane}` : `Right Lane ${lane}`;
+        }
+
+        function getDepthLabel(depth) {
+            if (depth <= 3) return "Defensive Zone";
+            if (depth <= 6) return "Neutral/Build Zone";
+            return "Target Area";
+        }
+
+        function calculateTarget(lane, depth) {
+            if (depth > 6) return null;
+            const targetLane = 20 - lane;
+            let targetDepth;
+            if (depth <= 3) targetDepth = 12; // Defensive to Deep
+            else if (depth <= 5) targetDepth = 11; // Neutral to Deep
+            else targetDepth = 12; // Offensive to Corner
+            return { lane: targetLane, depth: targetDepth };
+        }
+
+        function updateUI(lane, depth) {
+            if (!lane) {
+                posDisplay.innerText = '-- / --';
+                laneDisplay.innerText = 'Select Zone';
+                contextDisplay.innerText = 'N/A';
+                targetDisplay.innerText = '-- / --';
+                return;
+            }
+
+            posDisplay.innerText = `L:${lane} D:${depth}`;
+            laneDisplay.innerText = getLaneLabel(lane);
+            contextDisplay.innerText = getDepthLabel(depth);
+            
+            const target = calculateTarget(lane, depth);
+            if (target) {
+                targetDisplay.innerText = `L:${target.lane} D:${target.depth}`;
+                // Highlight target cell
+                const targetIdx = (12 - target.depth) * 19 + (target.lane - 1);
+                zones[targetIdx].classList.add('highlight-target');
+                zones[targetIdx].innerHTML = '<svg class="zap-icon w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
+            }
+        }
+
+        function clearHighlights() {
+            zones.forEach(z => {
+                z.classList.remove('highlight-hover', 'highlight-target');
+                z.innerHTML = '';
+            });
+        }
+
+        // Initialize Grid
+        for (let d = 12; d >= 1; d--) {
+            for (let l = 1; l <= LANES; l++) {
+                const zone = document.createElement('div');
+                zone.className = `zone ${d <= 6 ? 'zone-player' : 'zone-opponent'}`;
+                zone.dataset.lane = l;
+                zone.dataset.depth = d;
+
+                if (d <= 6) {
+                    zone.addEventListener('mouseenter', () => {
+                        clearHighlights();
+                        zone.classList.add('highlight-hover');
+                        updateUI(l, d);
+                    });
+                    zone.addEventListener('mouseleave', () => {
+                        clearHighlights();
+                        updateUI(null, null);
+                    });
+                }
+
+                gridLayer.appendChild(zone);
+                zones.push(zone);
+            }
+        }
+    </script>
+</body>
+</html>
