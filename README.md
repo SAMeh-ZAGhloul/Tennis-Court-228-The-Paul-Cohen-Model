@@ -51,6 +51,56 @@ The number **228** represents the exhaustive calculation of every viable "high-p
 
 ---
 
+## The Mathematics Behind the 228: Connected Tennis Principles
+
+The Paul Cohen 228-Zone Model is built on **"Connected Tennis" principles**, where every coordinate on your side of the court is mathematically linked to an optimal target on the opponent's side. The logic relies on three primary mathematical operations: **Lane Mirroring**, **Depth Reversal**, and **Coordinate Mapping**.
+
+### 1. Lane Mirroring (Horizontal Strategy)
+
+This formula calculates the "Most Correct" cross-court response. In a 19-lane system, the center lane is Lane 10. To find the geometric opposite, we use the constant of 20:
+
+$$L_{target} = 20 - L_{source}$$
+
+**Example:** If you are pulled wide to the left into Lane 1, the calculation is $20 - 1 = 19$. Your target is Lane 19 (the opposite deep corner).
+
+**Logic:** This maximizes the distance the ball travels over the lowest part of the net and forces the opponent to cover the maximum amount of ground.
+
+### 2. Depth Scaling (Vertical Strategy)
+
+The model divides the court into 12 depth zones. The formula for the target depth ($D_{target}$) depends on your tactical situation (Defensive, Neutral, or Offensive).
+
+#### Defensive Reversal ($D_{source} \leq 3$)
+
+When you are pushed deep behind the baseline, the goal is to "reset" the point by hitting as deep as possible.
+
+$$D_{target} = 12$$
+
+#### Neutral Build ($D_{source} = 4 \text{ to } 6$)
+
+When hitting from the baseline area, you aim for the "Safe Deep" zone to prevent the opponent from attacking.
+
+$$D_{target} = 11$$
+
+#### Offensive Finish ($D_{source} > 6$)
+
+If the ball is short, the geometry allows for sharper angles and lower depths, though the standard high-percentage Cohen target remains deep in the corner to remove the opponent's options.
+
+### 3. Grid Coordinate Mapping
+
+To render this in code, the 2D coordinates must be mapped to a 1D array index for the zones array. Since the grid is generated from the top-left (Opponent's baseline) down to the bottom-right (Player's baseline), we use:
+
+$$Index = ((DEPTHS_{total} - D_{target}) \times LANES_{total}) + (L_{target} - 1)$$
+
+### Summary Table of Mathematical Logic
+
+| Your Lane ($L_s$) | Your Depth ($D_s$) | Calculation | Target Lane | Target Depth |
+|---|---|---|---|---|
+| 1 (Wide Left) | 2 (Deep) | $20 - 1 = 19$ | 19 (Wide Right) | 12 (Deep) |
+| 10 (Center) | 5 (Baseline) | $20 - 10 = 10$ | 10 (Down T) | 11 (Deep) |
+| 15 (Right) | 6 (Short) | $20 - 15 = 5$ | 5 (Inside-Out) | 11 (Safe Deep) |
+
+---
+
 ## The Legacy at Court 228
 
 Today, Jon Cohen carries on his father Paul Cohen's legacy at his private facility in Hawthorne, NY. The **"Connected Tennis" model** is used to train elite juniors and professionals, teaching them to see the court as a grid where every movement has a **specific purpose**.
